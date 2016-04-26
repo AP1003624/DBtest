@@ -25,9 +25,9 @@ public class K_DBSCAN {
 	
 
 	/**
-	 * IS-DBSCAN算法主函数
+	 * K-DBSCAN算法主函数
 	 * */
-	public void run_IS_DBSCAN_Cluster(List<DataPoint> dataPoints) {
+	public void run_K_DBSCAN_Cluster(List<DataPoint> dataPoints) {
 		int clusterID = 1;
 		System.out.println("开始寻找核心点......");
 		for (DataPoint dataPoint : dataPoints) 
