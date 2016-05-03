@@ -5,6 +5,8 @@
  */
 package com.test;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class IS_DBSCAN {
@@ -35,7 +37,7 @@ public class IS_DBSCAN {
 				if (ExpandCoreCluster(dataPoint, clusterID)) 
 					clusterID++;
 		System.out.println("核心点寻找完成......");
-		System.out.println("开始对非核心点进行聚类......");
+		System.out.println("开始对非核心点进行聚类......");	
 		for (DataPoint dataPoint : dataPoints) {
 			if (dataPoint.getClusterID() == -1) {
 				List<DataPoint> dataPointISKNN = dataPoint.getISKNN();
@@ -57,13 +59,19 @@ public class IS_DBSCAN {
 							dataPoint.setClusterID(nearestClusterID);
 							break;
 						} else {
-							dataPointISKNN.addAll(dataPoint2.getISKNN());
+							for (DataPoint dataPoint3 : dataPoint2.getISKNN()) {
+								if (!dataPointISKNN.contains(dataPoint3)) {
+									dataPointISKNN.add(dataPoint3);
+								}
+							}
 						}
-						dataPointISKNN.remove(m);
-						m--;
+					}
+					//如果邻域点都没有被标签则该点被标签为noise
+					if (dataPoint.getClusterID() == -1) {
+						dataPoint.setClusterID(0);
 					}
 				}
-			}
+			}	
 		} 
 		System.out.println("非核心点进行聚类完成......");
 	}
@@ -77,14 +85,18 @@ public class IS_DBSCAN {
 	 * @return 是否是核心点，是则进行ISKNN领域核心点扩展，否则不执行任何操作
 	 */
 	public boolean ExpandCoreCluster(DataPoint dataPoint,int clusterID) {
-		List<DataPoint> seedList = dataPoint.getISKNN();
+		List<DataPoint> seedList = new ArrayList<DataPoint>();
+		//深复制
+		Collections.addAll(seedList, new DataPoint[dataPoint.getISKNN().size()]);
+		Collections.copy(seedList, dataPoint.getISKNN());
 		double e = (2*this.K)/3;
 		if (seedList.size() > e) {
 			dataPoint.setClusterID(clusterID);
 //			System.out.println(dataPoint.getDataPointID() +" "+dataPoint.getClusterID());
 		}	
-		else 
+		else {
 			return false;
+		}
 		for (int i = 0; i < seedList.size(); i++) {
 			DataPoint dataPoint1 = seedList.get(i);
 			List<DataPoint> seedList1 = dataPoint1.getISKNN();
@@ -94,8 +106,11 @@ public class IS_DBSCAN {
 				for (int j = 0; j < seedList1.size(); j++) {
 					DataPoint dataPoint2 = seedList1.get(j);
 					int dataPoint2ClusterID = dataPoint2.getClusterID();
-					if (dataPoint2ClusterID == -1 && !seedList.contains(dataPoint2)) 
-						seedList.add(dataPoint2);
+					if (dataPoint2ClusterID == -1 || dataPoint2ClusterID == 0) {
+						if (!seedList.contains(dataPoint2)) {
+							seedList.add(dataPoint2);
+						}
+					}
 				}
 			}
 		}

@@ -57,6 +57,40 @@ public class test {
 	}
 	
 	
+	public static void runKDD_IS_DBSCAN(String path,int K) throws Exception{
+		long time = System.currentTimeMillis();
+		List<DataPoint> dataPoints = Until.getDataPoints(path);
+		Cache<Set<DataPoint>, Double> distanceCache = Until.getDistanceCache(dataPoints, K);
+		for (int j = 0; j < dataPoints.size(); j++) {
+			DataPoint dataPoint = dataPoints.get(j);
+			dataPoint.setRKNN(Until.getRK_NNList(dataPoint,dataPoints));
+			dataPoint.setISKNN(Until.getISKNN(dataPoint));
+		}
+//		//按照ISKNN集合大小降序排列
+//		Collections.sort(dataPoints, new Comparator<DataPoint>() {
+//
+//			public int compare(DataPoint o1, DataPoint o2) {
+//				// TODO Auto-generated method stub
+//				int diff = o1.getISKNN().size()-o2.getISKNN().size();
+//				if (diff > 0) {
+//					return -1;
+//				}
+//				if (diff < 0) {
+//					return 1;
+//				} 
+//				return 0;
+//			}
+//		});
+		IS_DBSCAN is_DBSCAN = new IS_DBSCAN(K);
+		is_DBSCAN.run_IS_DBSCAN_Cluster(dataPoints);
+		for (int m = 0; m < dataPoints.size(); m++) {
+			DataPoint dataPoint = dataPoints.get(m);
+			dataPoint.to_String();
+		}
+		System.out.println(System.currentTimeMillis() - time);
+	}
+	
+	
 	public static void run_Weka_DBSCAN(String path,double Eps,int MinPts) throws Exception{
 		long time = System.currentTimeMillis();
 		//读入数据，封装成DataPoint实例
@@ -104,17 +138,27 @@ public class test {
 				
 		
 		int K = 6; 
-		String path = "C:\\Users\\wujun\\Desktop\\dataSet\\iris.csv";
+		
+		/** KDD数据集 */
+		
+		/** 经过归一化处理 */
+//		String path = "testdata.txt";
+		/** 未经过归一化处理 */
+		String path = "testdata2.txt";
+		runKDD_IS_DBSCAN(path, K);
+		
+		
+//		String path = "C:\\Users\\wujun\\Desktop\\dataSet\\iris.csv";
 //		String path = "C:\\Users\\wujun\\Desktop\\dataSet\\wine.csv";
 //		String path = "C:\\Users\\wujun\\Desktop\\dataSet\\seeds.csv";
 //		String path = "C:\\Users\\wujun\\Desktop\\dataSet\\wdbc.csv";
 //		String path = "C:\\Users\\wujun\\Desktop\\dataSet\\ionosphere.csv";
 		/** IS_DBSCAN */
-		run_IS_DBSCAN(path, K);
+//		run_IS_DBSCAN(path, K);
 		
 		/** Weka中的DBSCAN程序 */
-		double Eps = 0.9;
-		int MinPts = 6; 
+//		double Eps = 0.9;
+//		int MinPts = 6; 
 //		run_Weka_DBSCAN(path, Eps, MinPts);
 		
 		/**最基本的DBSCAN程序，根据最先提出的原始外文实现的 */
